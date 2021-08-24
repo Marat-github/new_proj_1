@@ -1,1 +1,1 @@
-# new_proj_1
+# Repository for Python Training

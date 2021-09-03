@@ -1,55 +1,25 @@
-# -*- coding: utf-8 -*-
-import unittest
-
-from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 
-from contact_class import Contact
 
+class ContactHelper:
+    def __init__(self, app):
+        self.app = app
 
-class TestAddContact(unittest.TestCase):
-    def setUp(self):
-        self.wd = webdriver.Firefox()
-        self.wd.implicitly_wait(30)
-    
-    def test_add_contact(self):
-        wd = self.wd
-        self.open_home_page(wd)
-        self.login(wd)
-        self.create_contact(wd, Contact(firstname="1234", middlename="1243", lastname="234", nickname="324", title="324234",
-                            company="fdge", address="ebebebt", home_number="4532532", mobile_number="5435435435",
-                            work_number="234324", fax="12333", email="bteby56@mail.ru", email2="bteby56@mail.ru",
-                            email3="bteby56@mail.ru", homepage="bteby56@mail.ru", bday="10", bmonth="November",
-                            byear="1999", aday="12", amonth="December", ayear="2018", group="new_group_1",
-                            address2="greg3g43", phone2="32g4", notes="vbfdbr"))
-        self.return_home_page(wd)
-        self.logout(wd)
-
-    def test_add_empty_contact(self):
-        wd = self.wd
-        self.open_home_page(wd)
-        self.login(wd)
-        self.create_contact(wd, Contact(firstname="", middlename="", lastname="", nickname="", title="",
-                            company="", address="", home_number="", mobile_number="",
-                            work_number="", fax="", email="", email2="",
-                            email3="", homepage="", bday="-", bmonth="-",
-                            byear="", aday="-", amonth="-", ayear="", group="",
-                            address2="", phone2="", notes=""))
-        self.return_home_page(wd)
-        self.logout(wd)
-
-    def logout(self, wd):
-        # logout
-        wd.find_element_by_link_text("Logout").click()
-
-    def return_home_page(self, wd):
-        # return to home page
+    def return_to_home_page(self):
+        wd = self.app.wd
         wd.find_element_by_link_text("home page").click()
 
-    def create_contact(self, wd, contact):
+    def create_contact(self, contact):
+        wd = self.app.wd
+        wd.find_element_by_link_text("home").click()
         # init contact creation
         wd.find_element_by_link_text("add new").click()
-        # fill contact form
+        self.fill_contact_form(contact)
+        wd.find_element_by_xpath("//div[@id='content']/form/input[21]").click()
+        self.return_to_home_page()
+
+    def fill_contact_form(self, contact):
+        wd = self.app.wd
         wd.find_element_by_name("firstname").click()
         wd.find_element_by_name("firstname").clear()
         wd.find_element_by_name("firstname").send_keys(contact.firstname)
@@ -110,8 +80,6 @@ class TestAddContact(unittest.TestCase):
         wd.find_element_by_name("ayear").click()
         wd.find_element_by_name("ayear").clear()
         wd.find_element_by_name("ayear").send_keys(contact.ayear)
-        wd.find_element_by_name("new_group").click()
-        Select(wd.find_element_by_name("new_group")).select_by_visible_text(contact.group)
         wd.find_element_by_name("address2").click()
         wd.find_element_by_name("address2").clear()
         wd.find_element_by_name("address2").send_keys(contact.address2)
@@ -121,25 +89,19 @@ class TestAddContact(unittest.TestCase):
         wd.find_element_by_name("notes").click()
         wd.find_element_by_name("notes").clear()
         wd.find_element_by_name("notes").send_keys(contact.notes)
-        wd.find_element_by_xpath("//div[@id='content']/form/input[21]").click()
 
-    def login(self, wd):
-        # login
-        wd.find_element_by_name("user").click()
-        wd.find_element_by_name("user").clear()
-        wd.find_element_by_name("user").send_keys("admin")
-        wd.find_element_by_name("pass").click()
-        wd.find_element_by_name("pass").clear()
-        wd.find_element_by_name("pass").send_keys("secret")
-        wd.find_element_by_xpath("//input[@value='Login']").click()
+    def delete_first_contact(self):
+        wd = self.app.wd
+        wd.find_element_by_link_text("home").click()
+        wd.find_element_by_name("selected[]").click()
+        wd.find_element_by_xpath("/html/body/div/div[4]/form[2]/div[2]/input").click()
+        wd.switch_to_alert().accept()
+        wd.find_element_by_link_text("home").click()
 
-    def open_home_page(self, wd):
-        # open home page
-        wd.get("http://localhost/addressbook/")
-
-    def tearDown(self):
-        self.wd.quit()
-
-
-if __name__ == "__main__":
-    unittest.main()
+    def modify_first_contact(self, contact):
+        wd = self.app.wd
+        wd.find_element_by_link_text("home").click()
+        wd.find_element_by_xpath("/html/body/div/div[4]/form[2]/table/tbody/tr[2]/td[8]/a").click()
+        self.fill_contact_form(contact)
+        wd.find_element_by_name("update").click()
+        self.return_to_home_page()
